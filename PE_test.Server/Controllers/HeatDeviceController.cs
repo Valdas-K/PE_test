@@ -1,4 +1,6 @@
-﻿namespace PE_test.Server.Controllers;
+﻿using DocumentFormat.OpenXml.Spreadsheet;
+
+namespace PE_test.Server.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -238,124 +240,96 @@ public class HeatDeviceController : ControllerBase {
 
     [HttpGet("save")]
     public async Task<ActionResult> SaveData(List<HeatDevice> devices) {
-        string fileName = "devices.xlsx";
+        //Sukuriamas Excel failas ir failo pavadinimas
         var memoryStream = new MemoryStream();
+        string fileName = "devices.xlsx";
         using (var workbook = new XLWorkbook()) {
+            //Sukuriamas darbo lapas
             var worksheet = workbook.Worksheets.Add("Pirmas");
-
+            
+            //Šilumos gamintojų tipai ir sujungiami reikiami langeliai
             worksheet.Cell(1, 1).Value = "AŠG";
             worksheet.Range("A1:D1").Merge();
-            worksheet.Cell(2, 1).Value = "AB Panevėžio stiklas";
-            worksheet.Range("A2:D2").Merge();
-            worksheet.Cell(3, 1).Value = "Šilumos gamyba";
-            worksheet.Cell(3, 2).Value = "Termofikacinio vandens";
-            worksheet.Range("B3:D3").Merge();
-
-            worksheet.Cell(4, 1).Value = "Mw";
-            worksheet.Cell(4, 2).Value = "T1 (C)";
-            worksheet.Cell(4, 3).Value = "P1 (bar)";
-            worksheet.Cell(4, 4).Value = "P2 (bar)";
-
             worksheet.Cell(1, 5).Value = "NŠG";
             worksheet.Range("E1:H1").Merge();
-            worksheet.Cell(2, 5).Value = "UAB Biokuro energija";
-            worksheet.Range("E2:H2").Merge();
-            worksheet.Cell(3, 5).Value = "Šilumos gamyba";
-            worksheet.Cell(3, 6).Value = "Termofikacinio vandens";
-            worksheet.Range("F3:H3").Merge();
-
-            worksheet.Cell(4, 5).Value = "Mw";
-            worksheet.Cell(4, 6).Value = "T1 (C)";
-            worksheet.Cell(4, 7).Value = "P1 (bar)";
-            worksheet.Cell(4, 8).Value = "P2 (bar)";
-
             worksheet.Cell(1, 9).Value = "AB Panevėžio energija konkurenciniai įrenginiai";
             worksheet.Range("I1:X1").Merge();
-            worksheet.Cell(2, 9).Value = "PRK-1 GK Nr.6 ir Nr.7 kogeneracinis blokas";
-            worksheet.Range("I2:L2").Merge();
-            worksheet.Cell(3, 9).Value = "Šilumos gamyba";
-            worksheet.Cell(3, 10).Value = "Termofikacinio vandens";
-            worksheet.Range("J3:L3").Merge();
-
-            worksheet.Cell(4, 9).Value = "Mw";
-            worksheet.Cell(4, 10).Value = "T1 (C)";
-            worksheet.Cell(4, 11).Value = "P1 (bar)";
-            worksheet.Cell(4, 12).Value = "P2 (bar)";
-
-            worksheet.Cell(2, 13).Value = "PRK-1 VŠK Nr.8 ir Nr.9 blokas";
-            worksheet.Range("M2:P2").Merge();
-            worksheet.Cell(3, 13).Value = "Šilumos gamyba";
-            worksheet.Cell(3, 14).Value = "Termofikacinio vandens";
-            worksheet.Range("N3:P3").Merge();
-
-            worksheet.Cell(4, 13).Value = "Mw";
-            worksheet.Cell(4, 14).Value = "T1 (C)";
-            worksheet.Cell(4, 15).Value = "P1 (bar)";
-            worksheet.Cell(4, 16).Value = "P2 (bar)";
-
-            worksheet.Cell(2, 17).Value = "PEI katilinė VŠK Nr.1";
-            worksheet.Range("Q2:T2").Merge();
-            worksheet.Cell(3, 17).Value = "Šilumos gamyba";
-            worksheet.Cell(3, 18).Value = "Termofikacinio vandens";
-            worksheet.Range("R3:T3").Merge();
-
-            worksheet.Cell(4, 17).Value = "Mw";
-            worksheet.Cell(4, 18).Value = "T1 (C)";
-            worksheet.Cell(4, 19).Value = "P1 (bar)";
-            worksheet.Cell(4, 20).Value = "P2 (bar)";
-
-            worksheet.Cell(2, 21).Value = "PRK-1 VŠK Nr.5";
-            worksheet.Range("U2:X2").Merge();
-            worksheet.Cell(3, 21).Value = "Šilumos gamyba";
-            worksheet.Cell(3, 22).Value = "Termofikacinio vandens";
-            worksheet.Range("V3:X3").Merge();
-
-            worksheet.Cell(4, 21).Value = "Mw";
-            worksheet.Cell(4, 22).Value = "T1 (C)";
-            worksheet.Cell(4, 23).Value = "P1 (bar)";
-            worksheet.Cell(4, 24).Value = "P2 (bar)";
-
             worksheet.Cell(1, 25).Value = "AB Panevėžio energija piko/rezervo įrenginiai";
             worksheet.Range("Y1:AB2").Merge();
-            worksheet.Cell(3, 25).Value = "Šilumos gamyba";
-            worksheet.Cell(3, 26).Value = "Termofikacinio vandens";
+
+            //Katilinių pavadinimai ir sujungiami reikiami langeliai
+            worksheet.Cell(2, 1).Value = "AB Panevėžio stiklas";
+            worksheet.Range("A2:D2").Merge();
+            worksheet.Range("B3:D3").Merge();
+            worksheet.Cell(2, 5).Value = "UAB Biokuro energija";
+            worksheet.Range("E2:H2").Merge();
+            worksheet.Range("F3:H3").Merge();
+            worksheet.Cell(2, 9).Value = "PRK-1 GK Nr.6 ir Nr.7 kogeneracinis blokas";
+            worksheet.Range("I2:L2").Merge();
+            worksheet.Range("J3:L3").Merge();
+            worksheet.Cell(2, 13).Value = "PRK-1 VŠK Nr.8 ir Nr.9 blokas";
+            worksheet.Range("M2:P2").Merge();
+            worksheet.Range("N3:P3").Merge();
+            worksheet.Cell(2, 17).Value = "PEI katilinė VŠK Nr.1";
+            worksheet.Range("Q2:T2").Merge();
+            worksheet.Range("R3:T3").Merge();
+            worksheet.Cell(2, 21).Value = "PRK-1 VŠK Nr.5";
+            worksheet.Range("U2:X2").Merge();
+            worksheet.Range("V3:X3").Merge();
             worksheet.Range("Z3:AB3").Merge();
 
-            worksheet.Cell(4, 25).Value = "Mw";
-            worksheet.Cell(4, 26).Value = "T1 (C)";
-            worksheet.Cell(4, 27).Value = "P1 (bar)";
-            worksheet.Cell(4, 28).Value = "P2 (bar)";
-
+            //Įdedami duomenys ir kita pasikartojanti informacija
+            //index - stulpelio numeris
             int index = 1;
             foreach (var device in devices) {
+                //Galia Power
                 if (device.Power == null)
                     worksheet.Cell(5, index).Value = "-";
                 else
                     worksheet.Cell(5, index).Value = device.Power;
+                worksheet.Cell(4, index).Value = "Mw";
+                worksheet.Cell(3, index).Value = "Šilumos gamyba";
                 index++;
 
+                //Temperatūra TFlow
                 if (device.TFlow == null)
                     worksheet.Cell(5, index).Value = "-";
                 else
                     worksheet.Cell(5, index).Value = device.TFlow;
+                worksheet.Cell(4, index).Value = "T1 (C)";
+                worksheet.Cell(3, index).Value = "Termofikacinio vandens";
                 index++;
 
+                //Slėgis P01
                 if (device.P01 == null)
                     worksheet.Cell(5, index).Value = "-";
                 else
                     worksheet.Cell(5, index).Value = device.P01;
+                worksheet.Cell(4, index).Value = "P1 (bar)";
                 index++;
 
+                //Slėgis P02
                 if (device.P02 == null)
                     worksheet.Cell(5, index).Value = "-";
                 else
                     worksheet.Cell(5, index).Value = device.P02;
+                worksheet.Cell(4, index).Value = "P2 (bar)";
                 index++;
             }
+            //Pridedami lentelės stiliai: linijų plotis, teksto lygiavimas, numerių formatas, pastorintas šriftas ir automatiniai langelių pločiai
+            var allCells = worksheet.RangeUsed().Style;
+            allCells.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+            allCells.Alignment.Vertical = XLAlignmentVerticalValues.Top;
+            allCells.NumberFormat.Format = "0.0";
+            worksheet.Range(1, 1, 5, index - 1).Style.Border.OutsideBorder = XLBorderStyleValues.Hair;
+            worksheet.Range(1, 1, 5, index - 1).Style.Border.InsideBorder = XLBorderStyleValues.Hair;
+            worksheet.Range(1, 1, 5, index - 1).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+            worksheet.Range(1, 1, 2, index - 1).Style.Font.Bold = true;
+            worksheet.Columns().AdjustToContents(9, 25.0);
 
+            //Išsaugomas failas
             workbook.SaveAs(fileName);
         }
-
         memoryStream.Position = 0;
         return File(memoryStream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
     }
