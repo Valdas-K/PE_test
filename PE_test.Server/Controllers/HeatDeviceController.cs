@@ -31,6 +31,104 @@ public class HeatDeviceController : ControllerBase {
         return heatDevices;
     }
 
+    [HttpGet("day")]
+    public async Task<List<HeatDevice>> GetDaysStats()
+    {
+        char[] chars = ['+', '-', '(', ')'];
+
+        decimal? power;
+        DateTime? time;
+
+        foreach (var device in heatDevices)
+        {
+            bool containsAnyChar = chars.Any(c => device.PowerCode.Contains(c));
+            if (containsAnyChar == false)
+            {
+                var query = from dcValue in _context.TblDcvalues
+                            join heatmeters in _context.CmpHeatMetersVals on dcValue.DevCompId equals heatmeters.DevCompId
+                            where dcValue.DcvalueId == Int32.Parse(device.PowerCode) &&
+                                heatmeters.RecordTime >= new DateTime(2024, 05, 01, 07, 00, 00) &&
+                                heatmeters.RecordTime <= new DateTime(2024, 05, 01, 08, 00, 00)
+                            select new
+                            {
+                                heatmeters.RecordTime,
+                                heatmeters.Power,
+                                dcValue.Caption,
+                                dcValue.UnitId
+                            };
+                var result = query.FirstOrDefault();
+
+                if (result == null)
+                {
+                    power = 0;
+                    time = null;
+                }
+                else
+                {
+                    power = result.Power;
+                    time = result.RecordTime;
+                    if (!result.Caption.Contains("mw", StringComparison.CurrentCultureIgnoreCase) || (result.UnitId != 56))
+                    {
+                        power /= 1000;
+                    }
+                    power = Math.Round(power.Value, 1);
+                }
+                Console.WriteLine(device.Title + ", " + time + ", " + power);
+            } else {
+                string[] strings = device.PowerCode.Split(chars);
+                int[] powerCodes = new int[strings.Length];
+                decimal[] powerValues = new decimal[strings.Length];
+
+                for (int i = 0; i < powerCodes.Length; i++)
+                {
+                    powerCodes[i] = int.Parse(strings[i]);
+                }
+
+                for (int i = 0; i < strings.Length; i++)
+                {
+                    var query = from dcValue in _context.TblDcvalues
+                                join heatmeters in _context.CmpHeatMetersVals on dcValue.DevCompId equals heatmeters.DevCompId
+                                where dcValue.DcvalueId == powerCodes[i] &&
+                                    heatmeters.RecordTime >= new DateTime(2024, 05, 01, 07, 00, 00) &&
+                                    heatmeters.RecordTime <= new DateTime(2024, 05, 01, 08, 00, 00)
+                                select new
+                                {
+                                    heatmeters.RecordTime,
+                                    heatmeters.Power,
+                                    dcValue.Caption,
+                                    dcValue.UnitId
+                                };
+                    var result = query.FirstOrDefault();
+                    if (result == null)
+                    {
+                        power = 0;
+                        time = null;
+                    }
+                    else
+                    {
+                        power = result.Power;
+                        time = result.RecordTime;
+                        if (!result.Caption.Contains("mw", StringComparison.CurrentCultureIgnoreCase) || (result.UnitId != 56))
+                        {
+                            power /= 1000;
+                        }
+                        power = Math.Round(power.Value, 1);
+                    }
+                    Console.WriteLine(device.Title + ", " + time + ", " + power);
+                }
+
+                string finalString = device.PowerCode;
+                for (int i = 0; i < strings.Length; i++)
+                {
+                    finalString = finalString.Replace(strings[i].ToString(), powerValues[i].ToString());
+                }
+
+                var answer = new DataTable().Compute(finalString, null);
+            }
+        }
+        return heatDevices;
+    }
+
     [HttpGet("power")]
     public async Task<decimal?> GetPowerStats(string codeString) {
         char[] chars = ['+', '-', '(', ')'];
