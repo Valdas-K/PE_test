@@ -26,8 +26,7 @@ public class HeatDeviceController : ControllerBase {
         foreach (var device in heatDevices) {
             device.Power = await GetPowerStats(device.PowerCode);
             device.TFlow = await GetTempStats(device.TempCode);
-            device.P01 = await GetP1Stats(device.P1Code);
-            device.P02 = await GetP2Stats(device.P2Code);
+            (device.P01, device.P02) = await GetPressureStats(device.P1Code, device.P2Code);
         }
         await SaveData(heatDevices);
         return heatDevices;
@@ -197,45 +196,34 @@ public class HeatDeviceController : ControllerBase {
         }
     }
 
-    [HttpGet("heat")]
+    [HttpGet("tflow")]
     public async Task<decimal?> GetTempStats(int code) {
+        //Temperatūros užklausa
         var query = from dcValue in _context.TblDcvalues
                     join heatMetersLast in _context.CmpHeatMetersValLasts on dcValue.DevCompId equals heatMetersLast.DevCompId
                     where dcValue.DcvalueId == code
                     select heatMetersLast.Tflow;
-        decimal? result = query.FirstOrDefault();
-        if (result != null) {
-            result = Math.Round(result.Value, 1);
-        }
-        return result;
+
+        //Grąžinamas rezultatas
+        return query.FirstOrDefault();
     }
 
-    [HttpGet("p1")]
-    public async Task<float?> GetP1Stats(int code) {
-        var query = from dcValue in _context.TblDcvalues
+    [HttpGet("p")]
+    public async Task<Tuple<float?, float?>> GetPressureStats(int p1Code, int p2Code) {
+        //Slėgių užklausos
+        var p1Query = from dcValue in _context.TblDcvalues
                     join pressureMetersLast in _context.CmpPressuresValLasts on dcValue.DevCompId equals pressureMetersLast.DevCompId
-                    where dcValue.DcvalueId == code
+                    where dcValue.DcvalueId == p1Code
                     select pressureMetersLast.P00;
-        float? result = query.FirstOrDefault();
-        if (result != null) {
-            decimal decimalResult = Math.Round((decimal)result, 1);
-            result = (float?)decimalResult;
-        }
-        return result;
-    }
 
-    [HttpGet("p2")]
-    public async Task<float?> GetP2Stats(int code) {
-        var query = from dcValue in _context.TblDcvalues
-                    join pressureMetersLast in _context.CmpPressuresValLasts on dcValue.DevCompId equals pressureMetersLast.DevCompId
-                    where dcValue.DcvalueId == code
-                    select pressureMetersLast.P01;
-        float? result = query.FirstOrDefault();
-        if (result != null) {
-            decimal decimalResult = Math.Round((decimal)result, 1);
-            result = (float?)decimalResult;
-        }
-        return result;
+        var p2Query = from dcValue in _context.TblDcvalues
+                      join pressureMetersLast in _context.CmpPressuresValLasts on dcValue.DevCompId equals pressureMetersLast.DevCompId
+                      where dcValue.DcvalueId == p2Code
+                      select pressureMetersLast.P01;
+
+        //Išsaugomi rezultatai
+        Tuple<float?, float?> results = new(p1Query.FirstOrDefault(), p2Query.FirstOrDefault());
+        return results;
     }
 
     [HttpGet("save")]
