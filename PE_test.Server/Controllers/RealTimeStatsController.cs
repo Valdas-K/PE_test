@@ -116,7 +116,8 @@ public class RealTimeStatsController : ControllerBase {
     public async Task<ActionResult> SaveData(List<HeatDevice> devices) {
         //Sukuriamas Excel failas ir failo pavadinimas
         var memoryStream = new MemoryStream();
-        string fileName = "devices.xlsx";
+        DateTime currentDate = DateTime.Now;
+        string fileName = "RealTime_" + currentDate.ToString("yyyy-MM-dd_HH-mm-ss.fff") + ".xlsx";
         using (var workbook = new XLWorkbook()) {
             //Sukuriamas darbo lapas
             var worksheet = workbook.Worksheets.Add("Pirmas");
@@ -204,24 +205,23 @@ public class RealTimeStatsController : ControllerBase {
             workbook.SaveAs(fileName);
         }
         memoryStream.Position = 0;
-        ExportRealTimeStats();
+        ExportRealTimeStats(fileName);
         return File(memoryStream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
     }
 
     [HttpGet("export")]
-    public void ExportRealTimeStats() {
+    public void ExportRealTimeStats(string fileName) {
         //Kintamieji
         //Naudojamas Rebex Tiny FTP Server
         string ftpServer = "ftp://localhost";
         string username = "tester";
         string password = "password";
-        string remoteFileName = "devices.xlsx";
         string projectFolder = AppDomain.CurrentDomain.BaseDirectory;
         projectFolder = Directory.GetParent(Directory.GetParent(projectFolder).FullName).FullName;
         projectFolder = Directory.GetParent(Directory.GetParent(projectFolder).FullName).FullName;
-        string localFilePath = Path.Combine(projectFolder, remoteFileName);
+        string localFilePath = Path.Combine(projectFolder, fileName);
 
-        FtpWebRequest request = (FtpWebRequest)WebRequest.Create(ftpServer + "/" + remoteFileName);
+        FtpWebRequest request = (FtpWebRequest)WebRequest.Create(ftpServer + "/" + fileName);
         request.Method = WebRequestMethods.Ftp.UploadFile;
         request.Credentials = new NetworkCredential(username, password);
         byte[] fileContents = System.IO.File.ReadAllBytes(localFilePath);
