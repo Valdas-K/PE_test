@@ -2,9 +2,9 @@
 
 [Route("api/[controller]")]
 [ApiController]
-public class HeatDeviceController : ControllerBase {
+public class HeatDevicesController : ControllerBase {
     private readonly ApplicationDbContext _context;
-    public HeatDeviceController(ApplicationDbContext context) {
+    public HeatDevicesController(ApplicationDbContext context) {
         _context = context;
     }
 
