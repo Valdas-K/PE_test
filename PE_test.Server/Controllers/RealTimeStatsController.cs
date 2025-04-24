@@ -215,10 +215,13 @@ public class RealTimeStatsController : ControllerBase {
         string ftpServer = "ftp://localhost";
         string username = "tester";
         string password = "password";
-        string localFilePath = @"C:\Users\pc\Documents\Praktika\PE_test\PE_test.Server\devices.xlsx";
         string remoteFileName = "devices.xlsx";
+        string projectFolder = AppDomain.CurrentDomain.BaseDirectory;
+        projectFolder = Directory.GetParent(Directory.GetParent(projectFolder).FullName).FullName;
+        projectFolder = Directory.GetParent(Directory.GetParent(projectFolder).FullName).FullName;
+        string localFilePath = Path.Combine(projectFolder, remoteFileName);
 
-        FtpWebRequest request = (FtpWebRequest)WebRequest.Create(ftpServer + "/"+ remoteFileName);
+        FtpWebRequest request = (FtpWebRequest)WebRequest.Create(ftpServer + "/" + remoteFileName);
         request.Method = WebRequestMethods.Ftp.UploadFile;
         request.Credentials = new NetworkCredential(username, password);
         byte[] fileContents = System.IO.File.ReadAllBytes(localFilePath);

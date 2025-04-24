@@ -147,15 +147,17 @@ public class LastDayStatsController : ControllerBase {
     }
 
     [HttpGet("export")]
-    public void ExportLastDayStats()
-    {
+    public void ExportLastDayStats() {
         //Kintamieji
         //Naudojamas Rebex Tiny FTP Server
         string ftpServer = "ftp://localhost";
         string username = "tester";
         string password = "password";
-        string localFilePath = @"C:\Users\pc\Documents\Praktika\PE_test\PE_test.Server\devices_1.xlsx";
         string remoteFileName = "devices_1.xlsx";
+        string projectFolder = AppDomain.CurrentDomain.BaseDirectory;
+        projectFolder = Directory.GetParent(Directory.GetParent(projectFolder).FullName).FullName;
+        projectFolder = Directory.GetParent(Directory.GetParent(projectFolder).FullName).FullName;
+        string localFilePath = Path.Combine(projectFolder, remoteFileName);
 
         FtpWebRequest request = (FtpWebRequest)WebRequest.Create(ftpServer + "/" + remoteFileName);
         request.Method = WebRequestMethods.Ftp.UploadFile;
