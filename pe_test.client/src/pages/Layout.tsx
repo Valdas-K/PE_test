@@ -10,8 +10,9 @@ export function Layout() {
             <div className='text-3xl'>Panevėžio energija</div>
             <nav>
                 <ul className='flex gap-x-2'>
-                    <li><Link to="/">Home</Link></li>
-                    <li><Link to="/heatdevices">Statistika realiu laiku</Link></li>
+                    <li><Link to="/">Pagrindinis</Link></li>
+                    <li><Link to="/realtimestats">Statistika realiu laiku</Link></li>
+                    <li><Link to="/lastdaystats">Paskutinės dienos statistika</Link></li>
                 </ul>
             </nav>
         </header>

@@ -1,7 +1,5 @@
 {
     "compilerOptions": {
-        /* Visit https://aka.ms/tsconfig to read more about this file */
-
         "target": "ESNext", /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */
         "useDefineForClassFields": true, /* Emit ECMAScript-standard-compliant class fields. */
         "lib": [ "DOM", "DOM.Iterable", "ESNext" ], /* Specify a set of bundled library declaration files that describe the target runtime environment. */
@@ -17,11 +15,6 @@
         "isolatedModules": true, /* Ensure that each file can be safely transpiled without relying on other imports. */
         "noEmit": true, /* Disable emitting files from a compilation. */
         "jsx": "react-jsx", /* Specify what JSX code is generated. */
-        "paths": {
-            "@/*": [
-                "./src/*"
-            ]
-        }
     },
     "include": [ "src" ],
     "references": [ { "path": "./tsconfig.node.json" } ]

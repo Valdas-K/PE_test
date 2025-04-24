@@ -10,6 +10,5 @@
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="src\pages\HomePage\" />
-    <Folder Include="src\pages\HeatDevicesPage\" />
   </ItemGroup>
 </Project>

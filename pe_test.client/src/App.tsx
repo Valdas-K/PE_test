@@ -4,7 +4,8 @@ import {
 } from "react-router-dom";
 import Home from "./pages/HomePage/Home";
 import { Layout } from "./pages/Layout";
-import HeatDevices from "./pages/HeatDevicesPage/HeatDevices";
+import RealTimeStats from "./pages/RealTimeStatsPage/RealTimeStats";
+import LastDayStats from "./pages/LastDayStatsPage/LastDayStats";
 
 export default function App() {
     const router = createBrowserRouter([
@@ -17,12 +18,16 @@ export default function App() {
                     Component: Home
                 },
                 {
-                    path: 'heatdevices',
-                    Component: HeatDevices
+                    path: 'realtimestats',
+                    Component: RealTimeStats
+                },
+                {
+                    path: 'lastdaystats',
+                    Component: LastDayStats
                 }
             ]
         },
     ])
 
-    return <RouterProvider router={router } />
+    return <RouterProvider router={ router } />
 }
