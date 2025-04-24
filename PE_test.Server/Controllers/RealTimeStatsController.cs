@@ -1,4 +1,8 @@
-﻿namespace PE_test.Server.Controllers;
+﻿using System;
+using System.IO;
+using System.Net;
+
+namespace PE_test.Server.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -200,6 +204,28 @@ public class RealTimeStatsController : ControllerBase {
             workbook.SaveAs(fileName);
         }
         memoryStream.Position = 0;
+        ExportRealTimeStats();
         return File(memoryStream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+    }
+
+    [HttpGet("export")]
+    public void ExportRealTimeStats() {
+        //Kintamieji
+        //Naudojamas Rebex Tiny FTP Server
+        string ftpServer = "ftp://localhost";
+        string username = "tester";
+        string password = "password";
+        string localFilePath = @"C:\Users\pc\Documents\Praktika\PE_test\PE_test.Server\devices.xlsx";
+        string remoteFileName = "devices.xlsx";
+
+        FtpWebRequest request = (FtpWebRequest)WebRequest.Create(ftpServer + "/"+ remoteFileName);
+        request.Method = WebRequestMethods.Ftp.UploadFile;
+        request.Credentials = new NetworkCredential(username, password);
+        byte[] fileContents = System.IO.File.ReadAllBytes(localFilePath);
+        request.ContentLength = fileContents.Length;
+
+        //Siunčiama ataskaita
+        using Stream requestStream = request.GetRequestStream();
+        requestStream.Write(fileContents, 0, fileContents.Length);
     }
 }

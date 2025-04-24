@@ -6,7 +6,7 @@ export function Layout() {
     const fetcherInProgress = fetchers.some((f) => ["loading", "submitting"].includes(f.state));
 
     return <div className='container mx-auto flex flex-col gap-y-2'>
-        <header className='bg-amber-700 text-white p-1'>
+        <header className='bg-blue-700 text-white p-1'>
             <div className='text-3xl'>Panevėžio energija</div>
             <nav>
                 <ul className='flex gap-x-2'>
@@ -21,7 +21,7 @@ export function Layout() {
             {fetcherInProgress && <div className="m-1">Fetcher in progress...</div>}
         </div>
         <Outlet />
-        <footer className='bg-gray-500 text-white text-sm flex content-center justify-center items-center h-10'>
+        <footer className='bg-green-500 text-white text-sm flex content-center justify-center items-center h-10'>
             <div> Panevėžio energija </div>
         </footer>
     </div>
