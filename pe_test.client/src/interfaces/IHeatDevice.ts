@@ -5,4 +5,5 @@ export interface IHeatDevice {
     tFlow?: number
     p01?: number
     p02?: number
+    volume?: number
 }

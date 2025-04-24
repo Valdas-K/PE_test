@@ -1,5 +1,4 @@
 ﻿namespace PE_test.Server; 
-
 public class HeatDevice {
     public required int ID { get; set; }
     public required string Title { get; set; }
@@ -11,6 +10,7 @@ public class HeatDevice {
     public decimal? TFlow { get; set; }
     public float? P01 { get; set; }
     public float? P02 { get; set; }
+    public decimal? Volume { get; set; }
 
     //Pradinė informacija
     public static List<HeatDevice> heatDevices = [

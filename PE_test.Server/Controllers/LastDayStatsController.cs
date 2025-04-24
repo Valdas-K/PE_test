@@ -1,6 +1,4 @@
-﻿using System.Net;
-
-namespace PE_test.Server.Controllers;
+﻿namespace PE_test.Server.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -14,13 +12,13 @@ public class LastDayStatsController : ControllerBase {
     public async Task<List<HeatDevice>> GetDayStats() {
         //Kiekvienam sąrašo įrašui yra randamos galios reikšmės ir paleidžiama saugojimo funkcija
         foreach (var device in HeatDevice.heatDevices) {
-            device.Power = await GetDaysPower(device.PowerCode);
+            device.Volume = await GetDaysVolume(device.PowerCode);
         }
         await SaveDayData(HeatDevice.heatDevices);
         return HeatDevice.heatDevices;
     }
 
-    [HttpGet("day-power-query")]
+    [HttpGet("day-volume-query")]
     public decimal? DayPowerQuery(string powerCodeString) {
         //Vykdoma užklausa
         var query = from dcValue in _context.TblDcvalues
@@ -29,54 +27,52 @@ public class LastDayStatsController : ControllerBase {
                         heatmeters.RecordTime >= new DateTime(2024, 05, 01, 07, 00, 00) &&
                         heatmeters.RecordTime <= new DateTime(2024, 05, 01, 08, 00, 00)
                     select new {
-                        heatmeters.RecordTime,
-                        heatmeters.Power,
+                        heatmeters.Volume,
                         dcValue.Caption,
                         dcValue.UnitId
                     };
 
         //Gaunamas rezultatas, kuris yra patikrinamas ir grąžinamas
-        decimal? power = null;
+        decimal? volume = null;
         var result = query.FirstOrDefault();
         if (result != null) {
-            power = result.Power;
-            if (!result.Caption.Contains("mw", StringComparison.CurrentCultureIgnoreCase) && (result.UnitId != 56)) {
-                power /= 1000;
+            volume = result.Volume;
+            if (!result.Caption.Contains("mwh", StringComparison.CurrentCultureIgnoreCase) && (result.UnitId != 14)) {
+                volume /= 1000;
             }
         }
-
-        return power;
+        return volume;
     }
 
-    [HttpGet("day-power")]
-    public async Task<decimal?> GetDaysPower(string powerCode) {
+    [HttpGet("day-volume")]
+    public async Task<decimal?> GetDaysVolume(string powerCode) {
         //Tikrinami simboliai
         char[] chars = ['+', '-'];
-        decimal? power;
+        decimal? volume;
         bool containsChar = chars.Any(c => powerCode.Contains(c));
         if (containsChar == false) {
             //Jei nėra jokio papildomo simbolio, yra gaunama galios reikšmė
-            power = DayPowerQuery(powerCode);
+            volume = DayPowerQuery(powerCode);
         } else {
             //Jei yra papildomas simbolis, yra randami visi atskiri kodai
             string[] strings = powerCode.Split(chars);
-            decimal[] powerValues = new decimal[strings.Length];
+            decimal[] volumeValues = new decimal[strings.Length];
             string finalString = powerCode;
 
             //Kiekvienam kodui yra gaunama galios reikšmė
             for (int i = 0; i < strings.Length; i++) {
-                powerValues[i] = DayPowerQuery(strings[i]).GetValueOrDefault();
+                volumeValues[i] = DayPowerQuery(strings[i]).GetValueOrDefault();
             }
 
             //Į originalią formulę yra įterpiamos galios reikšmės vieotje kodų
             for (int i = 0; i < strings.Length; i++) {
-                finalString = finalString.Replace(strings[i], powerValues[i].ToString());
+                finalString = finalString.Replace(strings[i], volumeValues[i].ToString());
             }
 
             //Atliekama funkcija, kuri tekstą paverčia matematine formule ir apskaičiuoja bendrą galios reikšmę 
-            power = Convert.ToDecimal(new DataTable().Compute(finalString, null));
+            volume = Convert.ToDecimal(new DataTable().Compute(finalString, null));
         }
-        return power;
+        return volume;
     }
 
     [HttpGet("save-day-data")]
@@ -94,10 +90,6 @@ public class LastDayStatsController : ControllerBase {
             worksheet.Range("A1:A3").Merge();
             worksheet.Cell(1, 2).Value = "Laikas";
             worksheet.Range("B1:C3").Merge();
-
-            worksheet.Cell(4, 1).Value = "2024-05-01";
-            worksheet.Cell(4, 2).Value = "07-08";
-            worksheet.Cell(4, 3).Value = "1";
 
             //Šilumos gamintojų tipai ir sujungiami langeliai
             worksheet.Cell(1, 4).Value = "AŠG";
@@ -119,12 +111,19 @@ public class LastDayStatsController : ControllerBase {
             //index - stulpelio numeris
             int index = 4;
             foreach (var device in devices) {
-                //Galia Power
-                if (device.Power == null)
-                    worksheet.Cell(4, index).Value = "-";
-                else
-                    worksheet.Cell(4, index).Value = device.Power;
-                worksheet.Cell(3, index).Value = "Šilumos gamyba (Mw)";
+                for(int i = 1; i <= 24; i++) {
+                    //Informacijos laukai
+                    worksheet.Cell(i + 3, 1).Value = DateTime.Now.ToString("yyyy-MM-dd");
+                    worksheet.Cell(i + 3, 2).Value = "07-08";
+                    worksheet.Cell(i + 3, 3).Value = i;
+
+                    //VOLUME
+                    if (device.Volume == null)
+                        worksheet.Cell(i + 3, index).Value = "-";
+                    else
+                        worksheet.Cell(i + 3, index).Value = device.Volume;
+                }
+                worksheet.Cell(3, index).Value = "Šilumos gamyba (Mwh)";
                 index++;
             }
 
@@ -133,10 +132,10 @@ public class LastDayStatsController : ControllerBase {
             allCells.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
             allCells.Alignment.Vertical = XLAlignmentVerticalValues.Top;
             allCells.NumberFormat.Format = "0.0";
-            worksheet.Range(1, 1, 4, index - 1).Style.Border.OutsideBorder = XLBorderStyleValues.Hair;
-            worksheet.Range(1, 1, 4, index - 1).Style.Border.InsideBorder = XLBorderStyleValues.Hair;
+            allCells.Alignment.WrapText = true;
+            worksheet.Range(1, 1, 27, index - 1).Style.Border.OutsideBorder = XLBorderStyleValues.Hair;
+            worksheet.Range(1, 1, 27, index - 1).Style.Border.InsideBorder = XLBorderStyleValues.Hair;
             worksheet.Range(1, 1, 2, index - 1).Style.Font.Bold = true;
-            worksheet.Range(1, 1, 5, index - 1).Style.Alignment.WrapText = true;
             worksheet.Columns().AdjustToContents(10.0, 25.0);
 
             //Išsaugomas failas

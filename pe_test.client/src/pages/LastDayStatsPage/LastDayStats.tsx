@@ -13,7 +13,7 @@ export default function HeatDevices() {
         <div className="text-3xl"> PANEVĖŽIO MIESTO ČŠT SISTEMOS ŠILUMOS GAMYBOS DUOMENYS </div>
         <div>
             {
-                lastDayStats.map(device => <div key={device.id}>{device.title} {device.power} </div>)
+                lastDayStats.map(device => <div key={device.id}>{device.title} {device.volume} </div>)
             }
         </div>
     </div>

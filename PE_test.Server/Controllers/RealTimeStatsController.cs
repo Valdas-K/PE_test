@@ -1,8 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Net;
-
-namespace PE_test.Server.Controllers;
+﻿namespace PE_test.Server.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
