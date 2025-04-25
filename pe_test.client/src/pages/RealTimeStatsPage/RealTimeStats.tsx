@@ -11,10 +11,40 @@ export default function RealTimeStats() {
 
     return <div>
         <div className="text-3xl"> PANEVĖŽIO MIESTO ČŠT SISTEMOJE VYKSTANČIOS ŠILUMOS GAMYBOS DUOMENYS (REALIU LAIKU) </div>
-        <div>
-            {
-                realTimeStats.map(device => <div key={device.id}> {device.title} {device.power} {device.tFlow} {device.p01} {device.p02}</div>)
-            }
-        </div>
+        <table cellPadding="5px">
+            <thead>
+                <tr>
+                    <th>Pavadinimas</th>
+                    <th>Galia Power</th>
+                    <th>Temperatūra TFlow</th>
+                    <th>Slėgis P01</th>
+                    <th>Slėgis P02</th>
+                </tr>
+            </thead>
+            <tbody>
+                {realTimeStats.map((device, key) => (
+                    <tr key={key}>
+                        <td>
+                            {device.title}
+                        </td>
+                        <td>
+                            {device.power !== null ? device.power : '-'}
+
+                        </td>
+                        <td>
+                            {device.tFlow !== null ? device.tFlow : '-'}
+
+                        </td>
+                        <td>
+                            {device.p01 !== null ? device.p01 : '-'}
+
+                        </td>
+                        <td>
+                            {device.p02 !== null ? device.p02 : '-'}
+                        </td>
+                    </tr>
+                ))}
+            </tbody>
+        </table>
     </div>
 }
